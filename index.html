@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Smartphone Digital Twin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">LIVE SENSOR EXPERIMENT</p>
+        <h1>Smartphone <span>Digital Twin</span></h1>
+        <p class="subtitle">Take part in a short experiment and discover what your phone senses.</p>
+      </div>
+      <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Not connected</span></div>
+    </header>
+
+
+    <section class="panel participant-panel" id="participantPanel">
+      <p class="eyebrow">01 · PARTICIPANT CHECK-IN</p>
+      <h2>Join the sensor experiment</h2>
+      <p class="muted">Enter a participant name or nickname. Please do not enter sensitive personal information.</p>
+      <div class="participant-fields">
+        <label for="participantName">Participant name / nickname</label>
+        <input id="participantName" maxlength="40" autocomplete="off" placeholder="e.g. Student 01">
+      </div>
+      <label class="consent-row"><input type="checkbox" id="consentCheck"> <span>I understand that this experiment reads motion and orientation from my device while sensors are enabled. I agree to take part voluntarily.</span></label>
+      <p class="small-note">Prototype privacy note: this version keeps readings in this browser session and downloads them only when you choose. It does not send data to a server.</p>
+      <button id="continueButton" class="primary-button" disabled>Continue to experiment</button>
+    </section>
+
+    <section class="panel experiment-panel" id="experimentPanel" hidden>
+      <p class="eyebrow">02 · GUIDED EXPERIMENT</p>
+      <h2>Collect your sensor data</h2>
+      <p class="muted">Complete both activities. Each one records approximately 10 seconds of readings.</p>
+      <div class="experiment-cards">
+        <article class="experiment-card">
+          <span class="step-number">ACTIVITY A</span><h3>Phone resting on a table</h3>
+          <p>Place your phone flat on a stable surface. Do not touch it while collecting.</p>
+          <div class="activity-hint">You are creating a baseline: what does the phone sense when it is not being moved?</div>
+          <button class="secondary-button collect-button" id="stationaryButton" data-condition="stationary" disabled>Record stationary condition</button>
+          <strong class="completion" id="stationaryStatus">Not recorded</strong>
+        </article>
+        <article class="experiment-card">
+          <span class="step-number">ACTIVITY B</span><h3>Move and rotate your phone</h3>
+          <p>Hold your phone securely. Slowly tilt it left and right, then rotate it gently.</p>
+          <div class="activity-hint">You are creating a movement sample to compare with the baseline.</div>
+          <button class="secondary-button collect-button" id="movementButton" data-condition="movement" disabled>Record movement condition</button>
+          <strong class="completion" id="movementStatus">Not recorded</strong>
+        </article>
+      </div>
+      <div class="recording-state" id="recordingState" aria-live="polite">Enable your phone sensors to begin. Use the button in the control centre.</div>
+    </section>
+
+    <section class="panel insight-panel" id="insightPanel">
+      <p class="eyebrow">LIVE INTERPRETATION</p><h2>What is your phone sensing?</h2>
+      <p id="plainExplanation">When sensor access is enabled, this area will explain the readings in everyday language. Try keeping your phone still, then gently moving it.</p>
+      <div class="insight-facts"><div><strong id="movementLevel">Waiting</strong><span>Movement pattern</span></div><div><strong id="gravityHint">—</strong><span>Acceleration magnitude</span></div></div>
+    </section>
+
+    <section class="hero-grid">
+      <article class="panel twin-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">PHYSICAL → DIGITAL</p><h2>Live 3D model</h2></div>
+          <span class="live-tag">● LIVE VIEW</span>
+        </div>
+        <div id="twinCanvas" class="twin-canvas" aria-label="3D model responding to phone orientation"></div>
+        <div class="model-caption"><span>Digital Twin orientation</span><strong id="orientationSummary">Waiting for sensor data</strong></div>
+      </article>
+
+      <article class="panel controls-panel">
+        <p class="eyebrow">CONTROL CENTRE</p>
+        <h2>Connect your device</h2>
+        <p class="muted">Open this page on your smartphone, then allow motion or orientation access when prompted.</p>
+        <div class="sensor-actions">
+          <button id="startButton" class="primary-button">Enable smartphone sensors</button>
+          <button id="stopButton" class="danger-button" hidden>Disable smartphone sensors</button>
+        </div>
+        <button id="calibrateButton" class="secondary-button" disabled>Calibrate reference position</button>
+        <div class="calibration-state"><span>Calibration</span><strong id="calibrationText">Not set</strong></div>
+        <p class="small-note">Tip: Place your phone flat and still before calibrating.</p>
+      </article>
+    </section>
+
+    <section class="readings-grid">
+      <article class="panel readings-panel">
+        <div class="panel-heading"><div><p class="eyebrow">DEVICE MOTION</p><h2>Acceleration · how movement changes</h2></div><span class="unit">m/s²</span></div>
+        <div class="metric-grid">
+          <div class="metric"><span>X axis</span><strong id="accX">—</strong></div>
+          <div class="metric"><span>Y axis</span><strong id="accY">—</strong></div>
+          <div class="metric"><span>Z axis</span><strong id="accZ">—</strong></div>
+        </div>
+      </article>
+      <article class="panel readings-panel">
+        <div class="panel-heading"><div><p class="eyebrow">DEVICE ORIENTATION</p><h2>Rotation · how the phone turns</h2></div><span class="unit">degrees</span></div>
+        <div class="metric-grid">
+          <div class="metric"><span>Alpha</span><strong id="alpha">—</strong></div>
+          <div class="metric"><span>Beta</span><strong id="beta">—</strong></div>
+          <div class="metric"><span>Gamma</span><strong id="gamma">—</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel explanation-panel">
+      <p class="eyebrow">DATA PIPELINE</p>
+      <h2>How the Digital Twin works</h2>
+      <div class="pipeline">
+        <div class="pipeline-step"><span>01</span><strong>Physical phone</strong><small>You move the device</small></div>
+        <b class="arrow">→</b>
+        <div class="pipeline-step"><span>02</span><strong>Motion sensors</strong><small>Measure movement</small></div>
+        <b class="arrow">→</b>
+        <div class="pipeline-step"><span>03</span><strong>Browser</strong><small>Reads sensor events</small></div>
+        <b class="arrow">→</b>
+        <div class="pipeline-step"><span>04</span><strong>Digital Twin</strong><small>Updates the 3D model</small></div>
+      </div>
+      <p class="footer-note">Demo note: orientation is obtained from the device orientation API. Acceleration is displayed when the browser provides motion data. Browser sensor readings are device-dependent.</p>
+    </section>
+    <section class="panel results-panel" id="resultsPanel">
+      <p class="eyebrow">03 · YOUR RESULTS</p><h2>Compare your two activities</h2>
+      <p class="muted">After recording both conditions, the platform calculates simple summaries from your collected samples.</p>
+      <div id="resultSummary" class="result-summary">Complete both activities to see your results.</div>
+      <button id="downloadButton" class="primary-button" disabled>Download my sensor data (CSV)</button>
+    </section>
+    <footer>Student research prototype · Smartphone sensor data and Digital Twins</footer>
+  </main>
+  <script src="platform.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
